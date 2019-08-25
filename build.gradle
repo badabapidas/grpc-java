@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id "com.google.protobuf" version "0.8.8"
+    id "idea"
+}
+
+group 'com.github.badabapidas'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    // grpc
+    compile 'io.grpc:grpc-netty-shaded:1.12.0' // shaded: includes ssl libraries
+    compile 'io.grpc:grpc-protobuf:1.12.0'
+    compile 'io.grpc:grpc-stub:1.12.0'
+    compile "io.grpc:grpc-services:1.12.0"   // reflection
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    // https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-sync
+    compile group: 'org.mongodb', name: 'mongodb-driver-sync', version: '3.8.2'
+
+}
+protobuf {
+    protoc {
+        //artifact = "com.google.protobuf:protoc:3.7.0"
+        artifact = "com.softwareag.ext.com.google.protobuf:protoc:3.7.0"
+
+    }
+    plugins {
+        grpc {
+            //artifact = "io.grpc:protoc-gen-grpc-java:1.19.0"
+            artifact = "com.softwareag.ext.io.grpc:protoc-gen-grpc-java:1.19.0"
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
+        }
+    }
+}
