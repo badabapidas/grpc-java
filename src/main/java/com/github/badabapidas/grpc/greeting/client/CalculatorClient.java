@@ -32,7 +32,7 @@ public class CalculatorClient {
         // CalculatorResponse response = calculatorClient.calculator(request);
         // System.out.println(response.getSum());
 
-        PrimeNumberRequest request = PrimeNumberRequest.newBuilder().setInput(1000).build();
+        PrimeNumberRequest request = PrimeNumberRequest.newBuilder().setInput(78987897).build();
         calculatorClient.primeNumer(request).forEachRemaining(primeNumberResponse -> {
             System.out.print(primeNumberResponse.getResult()+" ");
         });

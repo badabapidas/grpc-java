@@ -29,16 +29,17 @@ public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServi
     public void primeNumer(PrimeNumberRequest request, StreamObserver<PrimeNumberResponse> responseObserver) {
 
         try {
-            int total = request.getInput();
-            int k = 2;
-            while (total > 1) {
-                if (total % k == 0) {
+            int number = request.getInput();
+            int divisor = 2;
+            while (number > 1) {
+                if (number % divisor == 0) {
+                    number = number / divisor;
                     // set the reponse
-                    PrimeNumberResponse primeNumberResponse = PrimeNumberResponse.newBuilder().setResult(k).build();
+                    PrimeNumberResponse primeNumberResponse = PrimeNumberResponse.newBuilder().setResult(divisor).build();
                     responseObserver.onNext(primeNumberResponse);
-                    total = total / k;
+
                 } else {
-                    k = k + 1;
+                    divisor = divisor + 1;
                 }
             }
         } catch (Exception e) {
