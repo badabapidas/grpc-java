@@ -1,9 +1,6 @@
 package com.github.badabapidas.grpc.greeting.client;
 
-import com.proto.calculator.CalculatorRequest;
-import com.proto.calculator.CalculatorResponse;
-import com.proto.calculator.CalculatorServiceGrpc;
-import com.proto.calculator.Inputs;
+import com.proto.calculator.*;
 import com.proto.greet.GreetRequest;
 import com.proto.greet.GreetResponse;
 import com.proto.greet.GreetServiceGrpc;
@@ -16,26 +13,31 @@ public class CalculatorClient {
         System.out.println("Hello I am gRPC client");
 
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50051)
-                  .usePlaintext() // this will force to deactivate the ssl during development
+                .usePlaintext() // this will force to deactivate the ssl during development
                 .build();
         System.out.println("Creating stub");
 
-         // Created a calculator service client (blocking - synchronous)
+        // Created a calculator service client (blocking - synchronous)
         CalculatorServiceGrpc.CalculatorServiceBlockingStub calculatorClient = CalculatorServiceGrpc.newBlockingStub(channel);
 
         // Created protocol buffer calculator message
-        Inputs inputs = Inputs.newBuilder()
+       /* Inputs inputs = Inputs.newBuilder()
                                 .setFirstNumber(4)
                                 .setSecondNumber(10)
-                                .build();
+                                .build();*/
 
         // do the same for GreetRequest
-        CalculatorRequest request = CalculatorRequest.newBuilder().setInputs(inputs).build();
-
+        // CalculatorRequest request = CalculatorRequest.newBuilder().setInputs(inputs).build();
         // Call RPC and get back the CalculatorResponse (protocol buffers)
-        CalculatorResponse response = calculatorClient.calculator(request);
-        System.out.println(response.getSum());
+        // CalculatorResponse response = calculatorClient.calculator(request);
+        // System.out.println(response.getSum());
 
+        PrimeNumberRequest request = PrimeNumberRequest.newBuilder().setInput(1000).build();
+        calculatorClient.primeNumer(request).forEachRemaining(primeNumberResponse -> {
+            System.out.print(primeNumberResponse.getResult()+" ");
+        });
+
+        System.out.println();
         System.out.println("Shutting down channel");
         channel.shutdown();
     }

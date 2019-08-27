@@ -18,6 +18,15 @@ message CalculatorResponse {
     int32 sum = 1;
 }
 
+message PrimeNumberRequest {
+    int32 input = 1;
+}
+message PrimeNumberResponse {
+    int32 result  = 1;
+}
+
 service CalculatorService {
     rpc Calculator(CalculatorRequest) returns (CalculatorResponse) {};
+
+    rpc PrimeNumer(PrimeNumberRequest) returns (stream PrimeNumberResponse){};
 }
