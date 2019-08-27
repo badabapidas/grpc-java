@@ -1,9 +1,6 @@
 package com.github.badabapidas.grpc.greeting.server;
 
-import com.proto.greet.GreetRequest;
-import com.proto.greet.GreetResponse;
-import com.proto.greet.GreetServiceGrpc;
-import com.proto.greet.Greeting;
+import com.proto.greet.*;
 import io.grpc.stub.StreamObserver;
 
 public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
@@ -15,7 +12,7 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
         String lastName = greeting.getLastName();
 
         // create the response
-        String result ="Hello "+firstName+" "+lastName;
+        String result = "Hello " + firstName + " " + lastName;
         GreetResponse response = GreetResponse.newBuilder().setResult(result).build();
 
         // send the response
@@ -23,5 +20,26 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
 
         // complete the RPC call
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void greetManyTimes(GreetManyTimesRequest request, StreamObserver<GreetManyTimesResponse> responseObserver) {
+
+        try {
+            // extract the fields from request
+            Greeting greeting = request.getGreeting();
+            String firstName = greeting.getFirstName();
+
+            for (int i = 0; i < 10; i++) {
+                String result = "Hello " + firstName + ", Response no: " + i;
+                GreetManyTimesResponse response = GreetManyTimesResponse.newBuilder().setResult(result).build();
+                responseObserver.onNext(response);
+                Thread.sleep(1000L);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            responseObserver.onCompleted();
+        }
     }
 }
