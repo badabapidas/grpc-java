@@ -7,6 +7,10 @@ import com.proto.greet.GreetServiceGrpc;
 import com.proto.greet.Greeting;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.stub.StreamObserver;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class CalculatorClient {
     public static void main(String[] args) {
@@ -32,14 +36,53 @@ public class CalculatorClient {
         // CalculatorResponse response = calculatorClient.calculator(request);
         // System.out.println(response.getSum());
 
-        PrimeNumberRequest request = PrimeNumberRequest.newBuilder().setInput(78987897).build();
-        calculatorClient.primeNumer(request).forEachRemaining(primeNumberResponse -> {
-            System.out.print(primeNumberResponse.getResult()+" ");
+//        PrimeNumberRequest request = PrimeNumberRequest.newBuilder().setInput(78987897).build();
+//        calculatorClient.primeNumer(request).forEachRemaining(primeNumberResponse -> {
+//            System.out.print(primeNumberResponse.getResult()+" ");
+//        });
+//
+        CalculatorServiceGrpc.CalculatorServiceStub asyncClient = CalculatorServiceGrpc.newStub(channel);
+        CountDownLatch latch= new CountDownLatch(1);
+        StreamObserver<AverageRequest> requestObserver = asyncClient.avergae(new StreamObserver<AveragreResponse>() {
+            @Override
+            public void onNext(AveragreResponse value) {
+                System.out.println("Receive a response from a server");
+                System.out.println(value.getResult());
+            }
+
+            @Override
+            public void onError(Throwable t) {
+
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("Server has completed sending data.");
+                latch.countDown();
+            }
         });
+
+        sendData(requestObserver,1);
+        sendData(requestObserver,2);
+        sendData(requestObserver,3);
+        sendData(requestObserver,4);
+
+        // we tell the server that the client is done sending data
+        requestObserver.onCompleted();
+        try {
+            latch.await(5L, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         System.out.println();
         System.out.println("Shutting down channel");
         channel.shutdown();
+    }
+
+    private static void sendData(StreamObserver<AverageRequest> requestObserver, double number) {
+        requestObserver.onNext(AverageRequest.newBuilder().setInput(number)
+                .build());
     }
 
 }
