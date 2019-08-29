@@ -6,6 +6,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
 
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -27,14 +28,54 @@ public class GreetingClient {
 
 //        doUnaryCall();
 //        doServerStreamingCall();
-        doClientStreamingCall();
-
+//        doClientStreamingCall();
+        doBiDiStreamingCall();
         System.out.println("Shutting down channel");
         channel.shutdown();
     }
 
+    private void doBiDiStreamingCall() {
+        CountDownLatch latch = new CountDownLatch(1);
+        StreamObserver<GreetEveryoneRequest> requestObserver = asyncClient.greetEveryone(new StreamObserver<GreetEveryOneResponse>() {
+            @Override
+            public void onNext(GreetEveryOneResponse value) {
+                System.out.println("Response from server:" + value.getResult());
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                latch.countDown();
+            }
+
+            @Override
+            public void onCompleted() {
+                System.out.println("Response from server:");
+                latch.countDown();
+            }
+        });
+
+        Arrays.asList("Bapi", "John", "Kalepes", "Mark").forEach(
+                name -> {
+                    System.out.println("Sending: " + name);
+                    requestObserver.onNext(GreetEveryoneRequest.newBuilder().setGreeting(Greeting.newBuilder().setFirstName(name)).build());
+
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+        );
+        requestObserver.onCompleted();
+        try {
+            latch.await(5L, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void doClientStreamingCall() {
-        CountDownLatch latch= new CountDownLatch(1);
+        CountDownLatch latch = new CountDownLatch(1);
         StreamObserver<LongGreetRequest> requestObserver = asyncClient.longGreet(new StreamObserver<LongGreetResponse>() {
             @Override
             public void onNext(LongGreetResponse value) {
@@ -56,11 +97,11 @@ public class GreetingClient {
             }
         });
 
-        sendDatas(requestObserver,"Bapi"); // streaming msg 1
-        sendDatas(requestObserver,"Apu"); // streaming msg 2
-        sendDatas(requestObserver,"Sandu"); // streaming msg 3
-        sendDatas(requestObserver,"Dilip"); // streaming msg 4
-        sendDatas(requestObserver,"Amit"); // streaming msg 5
+        sendDatas(requestObserver, "Bapi"); // streaming msg 1
+        sendDatas(requestObserver, "Apu"); // streaming msg 2
+        sendDatas(requestObserver, "Sandu"); // streaming msg 3
+        sendDatas(requestObserver, "Dilip"); // streaming msg 4
+        sendDatas(requestObserver, "Amit"); // streaming msg 5
 
         // we tell the server that the client is done sending data
         requestObserver.onCompleted();
@@ -73,12 +114,11 @@ public class GreetingClient {
     }
 
     private void sendDatas(StreamObserver<LongGreetRequest> requestObserver, String name) {
-        System.out.println("Sending name: "+name);
+        System.out.println("Sending name: " + name);
         requestObserver.onNext(LongGreetRequest.newBuilder()
                 .setGreeting(Greeting.newBuilder().setFirstName(name).build())
                 .build());
     }
-
 
 
     private void doServerStreamingCall() {

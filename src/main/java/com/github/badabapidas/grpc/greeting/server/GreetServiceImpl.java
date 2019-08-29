@@ -48,10 +48,11 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
         StreamObserver<LongGreetRequest> requestObserver = new StreamObserver<LongGreetRequest>() {
 
             String result = "";
+
             @Override
             public void onNext(LongGreetRequest value) {
                 // client sends a message
-                result +=  "Hello "+value.getGreeting().getFirstName()+"! ";
+                result += "Hello " + value.getGreeting().getFirstName() + "! ";
             }
 
             @Override
@@ -67,5 +68,31 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
             }
         };
         return requestObserver;
+    }
+
+    @Override
+    public StreamObserver<GreetEveryoneRequest> greetEveryone(StreamObserver<GreetEveryOneResponse> responseObserver) {
+        StreamObserver<GreetEveryoneRequest> requestStreamObserver = new StreamObserver<GreetEveryoneRequest>() {
+            @Override
+            public void onNext(GreetEveryoneRequest value) {
+                String response = "Hello  " + value.getGreeting().getFirstName();
+                GreetEveryOneResponse greetEveryOneResponse = GreetEveryOneResponse.newBuilder().
+                        setResult(response)
+                        .build();
+                responseObserver.onNext(greetEveryOneResponse);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+
+            }
+
+            @Override
+            public void onCompleted() {
+                responseObserver.onCompleted();
+            }
+        };
+
+        return requestStreamObserver;
     }
 }
