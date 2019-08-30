@@ -3,35 +3,70 @@ package com.github.badabapidas.grpc.greeting.client;
 import com.proto.dummy.DummyServiceGrpc;
 import com.proto.greet.*;
 import io.grpc.*;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.StreamObserver;
 
+import javax.net.ssl.SSLException;
+import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class GreetingClient {
     private ManagedChannel channel;
+    private ManagedChannel secureChannel;
     private GreetServiceGrpc.GreetServiceBlockingStub greeClient;
     private GreetServiceGrpc.GreetServiceStub asyncClient;
 
-    private void run() {
+    private void run() throws SSLException {
         channel = ManagedChannelBuilder.forAddress("localhost", 50051)
                 .usePlaintext() // this will force to deactivate the ssl during development
                 .build();
+        secureChannel = NettyChannelBuilder.forAddress("localhost", 50051)
+                .sslContext(GrpcSslContexts.forClient().trustManager(new File("ssl/ca.crt")).build())
+                .build(); // this code is not able to handshake but as per documentation this should work
 
         // Created a greet service client (blocking - synchronous)
         System.out.println("Creating stub");
-        greeClient = GreetServiceGrpc.newBlockingStub(channel);
-        // create a async client (stub)
-        asyncClient = GreetServiceGrpc.newStub(channel);
 
-//        doUnaryCall();
+        greeClient = GreetServiceGrpc.newBlockingStub(channel);
+//        greeClient = GreetServiceGrpc.newBlockingStub(secureChannel);
+
+        // create a async client (stub)
+//        asyncClient = GreetServiceGrpc.newStub(channel);
+
+        doUnaryCall();
 //        doServerStreamingCall();
 //        doClientStreamingCall();
 //        doBiDiStreamingCall();
-        doUnaryCallWithDeadline();
+//        doUnaryCallWithDeadline();
+//        doUnaryCall(secureChannel);
         System.out.println("Shutting down channel");
         channel.shutdown();
+    }
+
+    private void doUnaryCall(ManagedChannel channel) {
+        // created a greet service client (blocking - synchronous)
+        GreetServiceGrpc.GreetServiceBlockingStub greetClient = GreetServiceGrpc.newBlockingStub(channel);
+
+        // Unary
+        // created a protocol buffer greeting message
+        Greeting greeting = Greeting.newBuilder()
+                .setFirstName("Stephane")
+                .setLastName("Maarek")
+                .build();
+
+        // do the same for a GreetRequest
+        GreetRequest greetRequest = GreetRequest.newBuilder()
+                .setGreeting(greeting)
+                .build();
+
+        // call the RPC and get back a GreetResponse (protocol buffers)
+        GreetResponse greetResponse = greetClient.greet(greetRequest);
+
+        System.out.println(greetResponse.getResult());
+
     }
 
     private void doUnaryCallWithDeadline() {
@@ -40,7 +75,7 @@ public class GreetingClient {
             GreetWithDeadlineResponse response = greeClient.withDeadline(Deadline.after(3000, TimeUnit.MILLISECONDS))
                     .greetWithDeadline(GreetWithDeadlineRequest.newBuilder().setGreeting(Greeting.newBuilder()
                             .setFirstName("Bapi").build()).build());
-            System.out.println("Response: "+response.getResult());
+            System.out.println("Response: " + response.getResult());
         } catch (StatusRuntimeException e) {
             if (e.getStatus() == Status.DEADLINE_EXCEEDED) {
                 System.out.println("Deadline exceeded, we dont get response");
@@ -53,9 +88,9 @@ public class GreetingClient {
             GreetWithDeadlineResponse response = greeClient.withDeadline(Deadline.after(100, TimeUnit.MILLISECONDS))
                     .greetWithDeadline(GreetWithDeadlineRequest.newBuilder().setGreeting(Greeting.newBuilder()
                             .setFirstName("Bapi").build()).build());
-            System.out.println("Response: "+response.getResult());
+            System.out.println("Response: " + response.getResult());
         } catch (StatusRuntimeException e) {
-            System.out.println("Status: "+e.getStatus());
+            System.out.println("Status: " + e.getStatus());
             if (e.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()) {
                 System.out.println("Deadline exceeded, we dont get response");
             } else
@@ -181,7 +216,7 @@ public class GreetingClient {
         System.out.println(response.getResult());
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SSLException {
 
         // Created protocol buffer greeting message
         System.out.println("Hello I am gRPC client");
