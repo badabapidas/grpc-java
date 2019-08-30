@@ -2,8 +2,7 @@ package com.github.badabapidas.grpc.greeting.client;
 
 import com.proto.dummy.DummyServiceGrpc;
 import com.proto.greet.*;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.*;
 import io.grpc.stub.StreamObserver;
 
 import java.util.Arrays;
@@ -29,9 +28,39 @@ public class GreetingClient {
 //        doUnaryCall();
 //        doServerStreamingCall();
 //        doClientStreamingCall();
-        doBiDiStreamingCall();
+//        doBiDiStreamingCall();
+        doUnaryCallWithDeadline();
         System.out.println("Shutting down channel");
         channel.shutdown();
+    }
+
+    private void doUnaryCallWithDeadline() {
+        // first call (3000 ms)
+        try {
+            GreetWithDeadlineResponse response = greeClient.withDeadline(Deadline.after(3000, TimeUnit.MILLISECONDS))
+                    .greetWithDeadline(GreetWithDeadlineRequest.newBuilder().setGreeting(Greeting.newBuilder()
+                            .setFirstName("Bapi").build()).build());
+            System.out.println("Response: "+response.getResult());
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus() == Status.DEADLINE_EXCEEDED) {
+                System.out.println("Deadline exceeded, we dont get response");
+            } else
+                e.printStackTrace();
+        }
+
+        // first call (100 ms)
+        try {
+            GreetWithDeadlineResponse response = greeClient.withDeadline(Deadline.after(100, TimeUnit.MILLISECONDS))
+                    .greetWithDeadline(GreetWithDeadlineRequest.newBuilder().setGreeting(Greeting.newBuilder()
+                            .setFirstName("Bapi").build()).build());
+            System.out.println("Response: "+response.getResult());
+        } catch (StatusRuntimeException e) {
+            System.out.println("Status: "+e.getStatus());
+            if (e.getStatus().getCode() == Status.DEADLINE_EXCEEDED.getCode()) {
+                System.out.println("Deadline exceeded, we dont get response");
+            } else
+                e.printStackTrace();
+        }
     }
 
     private void doBiDiStreamingCall() {

@@ -49,4 +49,6 @@ service CalculatorService {
     // Error handling
     // his RPC will throw an exception if the sent number is negative
     rpc SquareRoot (SquareRootRequest) returns (SquareRootResponse){};
+
+    
 }

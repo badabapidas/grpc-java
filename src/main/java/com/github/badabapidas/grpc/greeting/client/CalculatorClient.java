@@ -81,9 +81,10 @@ public class CalculatorClient {
         }*/
 
         // @@@@@@@@@@@@ Error handling
-        int number = -1;
+        int number = 10;
         try{
-            calculatorClient.squareRoot(SquareRootRequest.newBuilder().setNumber(number).build());
+            SquareRootResponse squareRootResponse = calculatorClient.squareRoot(SquareRootRequest.newBuilder().setNumber(number).build());
+            System.out.println("Response: "+squareRootResponse.getRootNum());
         }catch (StatusRuntimeException e){
             System.out.println("Error found: "+e.getMessage());
             e.printStackTrace();
