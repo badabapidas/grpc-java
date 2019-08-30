@@ -1,6 +1,7 @@
 package com.github.badabapidas.grpc.greeting.server;
 
 import com.proto.calculator.*;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
 public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServiceImplBase {
@@ -71,13 +72,27 @@ public class CalculatorServiceImpl extends CalculatorServiceGrpc.CalculatorServi
 
             @Override
             public void onCompleted() {
-                double result= sum / count;
-                System.out.println("result: "+result);
+                double result = sum / count;
+                System.out.println("result: " + result);
                 responseObserver.onNext(AveragreResponse.newBuilder().setResult(result).build());
                 responseObserver.onCompleted();
             }
         };
 
         return requestObserver;
+    }
+
+    @Override
+    public void squareRoot(SquareRootRequest request, StreamObserver<SquareRootResponse> responseObserver) {
+        int number = request.getNumber();
+        if (number >= 0) {
+            double sqrt = Math.sqrt(number);
+            responseObserver.onNext(SquareRootResponse.newBuilder().setRootNum(sqrt).build());
+            responseObserver.onCompleted();
+        } else {
+            responseObserver.onError(Status.INVALID_ARGUMENT.withDescription("The number is not positive")
+                    .augmentDescription("Number sent:" + number)
+                    .asRuntimeException());
+        }
     }
 }

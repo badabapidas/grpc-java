@@ -32,7 +32,12 @@ message AverageRequest {
 message AveragreResponse {
     double result =1;
 }
-
+message SquareRootRequest {
+    int32 number = 1;
+}
+message SquareRootResponse {
+    double root_num = 1;
+}
 
 service CalculatorService {
     rpc Calculator(CalculatorRequest) returns (CalculatorResponse) {};
@@ -40,4 +45,8 @@ service CalculatorService {
     rpc PrimeNumer(PrimeNumberRequest) returns (stream PrimeNumberResponse){};
 
     rpc Avergae(stream AverageRequest) returns (AveragreResponse){};
+
+    // Error handling
+    // his RPC will throw an exception if the sent number is negative
+    rpc SquareRoot (SquareRootRequest) returns (SquareRootResponse){};
 }

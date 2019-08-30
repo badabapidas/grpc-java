@@ -7,6 +7,7 @@ import com.proto.greet.GreetServiceGrpc;
 import com.proto.greet.Greeting;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 
 import java.util.concurrent.CountDownLatch;
@@ -36,11 +37,15 @@ public class CalculatorClient {
         // CalculatorResponse response = calculatorClient.calculator(request);
         // System.out.println(response.getSum());
 
-//        PrimeNumberRequest request = PrimeNumberRequest.newBuilder().setInput(78987897).build();
-//        calculatorClient.primeNumer(request).forEachRemaining(primeNumberResponse -> {
-//            System.out.print(primeNumberResponse.getResult()+" ");
-//        });
-//
+/*
+        // @@@@@@@@@@ Server Streaming call
+        PrimeNumberRequest request = PrimeNumberRequest.newBuilder().setInput(78987897).build();
+        calculatorClient.primeNumer(request).forEachRemaining(primeNumberResponse -> {
+            System.out.print(primeNumberResponse.getResult()+" ");
+        });
+*/
+
+        /*// @@@@@@@@@@ Client Streaming call
         CalculatorServiceGrpc.CalculatorServiceStub asyncClient = CalculatorServiceGrpc.newStub(channel);
         CountDownLatch latch= new CountDownLatch(1);
         StreamObserver<AverageRequest> requestObserver = asyncClient.avergae(new StreamObserver<AveragreResponse>() {
@@ -72,6 +77,15 @@ public class CalculatorClient {
         try {
             latch.await(5L, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        }*/
+
+        // @@@@@@@@@@@@ Error handling
+        int number = -1;
+        try{
+            calculatorClient.squareRoot(SquareRootRequest.newBuilder().setNumber(number).build());
+        }catch (StatusRuntimeException e){
+            System.out.println("Error found: "+e.getMessage());
             e.printStackTrace();
         }
 
