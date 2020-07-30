@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLException;
 
 import com.github.badabapidas.grpc.greeting.server.GreetingServer;
+import com.github.badabapidas.grpc.greeting.server.GrpcConstant;
 import com.proto.greet.GreetEveryOneResponse;
 import com.proto.greet.GreetEveryoneRequest;
 import com.proto.greet.GreetManyTimesRequest;
@@ -53,11 +54,12 @@ public class GreetingClient {
 
 		// secure channel communications
 		secureChannel = NettyChannelBuilder.forAddress(HOST, 50051)
-				.sslContext(GrpcSslContexts.forClient().trustManager(new File("ssl/ca.crt")).build()).build();
+				.sslContext(GrpcSslContexts.forClient()
+						.trustManager(new File(GrpcConstant.CERTIFICATE_PATH_1 +"/ca.crt")).build()).build();
 
 		// try with invalid certificate
 		// secureChannel = NettyChannelBuilder.forAddress(HOST, 50051)
-		//		.sslContext(GrpcSslContexts.forClient().trustManager(new File("ssl/ca1.crt")).build()).build();
+		//		.sslContext(GrpcSslContexts.forClient().trustManager(new File("GrpcConstant.CERTIFICATE_PATH_1+/ca1.crt")).build()).build();
 
 		greeClient = GreetServiceGrpc.newBlockingStub(channel);
 		// greeClient = GreetServiceGrpc.newBlockingStub(secureChannel);
@@ -65,12 +67,12 @@ public class GreetingClient {
 		// create a async client (stub)
 		// asyncClient = GreetServiceGrpc.newStub(channel);
 
-		 doUnaryCall();
+//		 doUnaryCall();
 		// doServerStreamingCall();
 		// doClientStreamingCall();
 		// doBiDiStreamingCall();
 		// doUnaryCallWithDeadline();
-		// doUnaryCall(secureChannel);
+		 doUnaryCall(secureChannel);
 		System.out.println("Shutting down channel");
 		if (channel != null) {
 			channel.shutdown();

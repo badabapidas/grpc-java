@@ -15,7 +15,7 @@ public class GreetingServer {
 		System.out.println("gRPC server is running...");
 
 		// unsecure server
-		// Server server = getUnSecureServer();
+//		 Server server = getUnSecureServer();
 
 		// secure server
 		Server server = getSecureServer();
@@ -48,7 +48,9 @@ public class GreetingServer {
 	private static Server getSecureServer() {
 		System.out.println("Server is secure");
 		return ServerBuilder.forPort(PORT).addService(new GreetServiceImpl())
-				.useTransportSecurity(new File("ssl/server.crt"), new File("ssl/server.pem")).build();
+				.useTransportSecurity(new File(GrpcConstant.CERTIFICATE_PATH_1 + "/server.crt"),
+						new File(GrpcConstant.CERTIFICATE_PATH_1 + "/server.pem"))
+				.build();
 
 	}
 }
