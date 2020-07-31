@@ -15,5 +15,13 @@ public class GrpcConstant {
 
 	public static final String AUTH_TOKEN = "auth_token";
 	public static final String VALID_TOKEN = "valid_token";
+	public static final String ADMIN_TOKEN = "admin_token";
+	public static final String USER_TOKEN = "user_token";
 	public static final String INVALID_TOKEN = "invalid_token";
+
+	public static final String ADMIN_ROLE = "admin";
+	public static final String USER_ROLE = "user";
+
+	public static final String USER_DETAILS = "user_details";
+
 }
