@@ -30,8 +30,9 @@ public class AuthorizationServerInterceptor implements ServerInterceptor {
 			try {
 				String token = value.substring(Constants.BEARER_TYPE.length()).trim();
 				Jws<Claims> claims = parser.parseClaimsJws(token);
-				Context ctx = Context.current().withValue(Constants.CLIENT_ID_CONTEXT_KEY,
-						claims.getBody().getSubject());
+				Context ctx = Context.current()
+						.withValue(Constants.CLIENT_ID_CONTEXT_KEY, claims.getBody().getSubject())
+						.withValue(Constants.UHM_TOKEN, claims.getBody().getId());
 				return Contexts.interceptCall(ctx, serverCall, metadata, serverCallHandler);
 			} catch (Exception e) {
 				status = Status.UNAUTHENTICATED.withDescription(e.getMessage()).withCause(e);

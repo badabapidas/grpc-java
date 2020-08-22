@@ -14,6 +14,9 @@ public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
 		String clientId = Constants.CLIENT_ID_CONTEXT_KEY.get();
 		System.out.println("Processing request from " + clientId);
 
+		String id = Constants.UHM_TOKEN.get();
+		System.out.println("Processing request id " + id);
+
 		if (!clientId.startsWith("Greeting")) {
 			responseObserver.onError(new StatusRuntimeException(Status.PERMISSION_DENIED));
 		} else {

@@ -15,6 +15,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 public class GreetingClient {
 	private static final String CLIENT_IDENTIFICFIER = "GreetingClient1";
+	private static final String UHM = "uhm";
 	private static final String HOST = "localhost";
 	private ManagedChannel channel;
 	private ManagedChannel secureChannel;
@@ -45,7 +46,7 @@ public class GreetingClient {
 
 	private static String getJwt() {
 		return Jwts.builder().setSubject(CLIENT_IDENTIFICFIER) // client's identifier
-				.signWith(SignatureAlgorithm.HS256, Constants.JWT_SIGNING_KEY).compact();
+				.setId(UHM).signWith(SignatureAlgorithm.HS256, Constants.JWT_SIGNING_KEY).compact();
 	}
 
 	private void doUnaryCall() {
