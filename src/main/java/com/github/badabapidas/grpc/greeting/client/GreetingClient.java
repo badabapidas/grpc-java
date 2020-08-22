@@ -26,8 +26,10 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.NettyChannelBuilder;
+//import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+//import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.stub.StreamObserver;
 
 public class GreetingClient {
@@ -47,19 +49,23 @@ public class GreetingClient {
 
 	private void run() throws SSLException {
 		// without any authentication (for development)
-		channel = ManagedChannelBuilder.forAddress(HOST, GreetingServer.PORT).usePlaintext().build();
-		
-		// be default grpc will enforce some basic tls so using this channel also throw error 
-		// channel = ManagedChannelBuilder.forAddress(HOST, GreetingServer.PORT).build();
+//		channel = NettyChannelBuilder.forAddress(HOST, GreetingServer.PORT).build();
+		channel = NettyChannelBuilder.forAddress(HOST, GreetingServer.PORT).usePlaintext().build();
+
+		// be default grpc will enforce some basic tls so using this channel also throw
+		// error
+		// channel = ManagedChannelBuilder.forAddress(HOST,
+		// GreetingServer.PORT).build();
 
 		// secure channel communications
-		secureChannel = NettyChannelBuilder.forAddress(HOST, 50051)
-				.sslContext(GrpcSslContexts.forClient()
-						.trustManager(new File(GrpcConstant.CERTIFICATE_PATH_1 +"/ca.crt")).build()).build();
+//		secureChannel = NettyChannelBuilder.forAddress(HOST, GreetingServer.PORT).sslContext(
+//				GrpcSslContexts.forClient().trustManager(new File(GrpcConstant.CERTIFICATE_PATH_1 + "/ca.crt")).build())
+//				.build();
 
 		// try with invalid certificate
 		// secureChannel = NettyChannelBuilder.forAddress(HOST, 50051)
-		//		.sslContext(GrpcSslContexts.forClient().trustManager(new File("GrpcConstant.CERTIFICATE_PATH_1+/ca1.crt")).build()).build();
+		// .sslContext(GrpcSslContexts.forClient().trustManager(new
+		// File("GrpcConstant.CERTIFICATE_PATH_1+/ca1.crt")).build()).build();
 
 		greeClient = GreetServiceGrpc.newBlockingStub(channel);
 		// greeClient = GreetServiceGrpc.newBlockingStub(secureChannel);
@@ -67,12 +73,12 @@ public class GreetingClient {
 		// create a async client (stub)
 		// asyncClient = GreetServiceGrpc.newStub(channel);
 
-//		 doUnaryCall();
+		doUnaryCall();
 		// doServerStreamingCall();
 		// doClientStreamingCall();
 		// doBiDiStreamingCall();
 		// doUnaryCallWithDeadline();
-		 doUnaryCall(secureChannel);
+//		doUnaryCall(secureChannel);
 		System.out.println("Shutting down channel");
 		if (channel != null) {
 			channel.shutdown();

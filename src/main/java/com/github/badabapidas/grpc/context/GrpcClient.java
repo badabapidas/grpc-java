@@ -9,22 +9,23 @@ import com.proto.calculator.Inputs;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.netty.NettyChannelBuilder;
 
 public class GrpcClient {
 
 	public static void main(String[] args) {
 		System.out.println("[gRPC client]: Calculator");
-//		System.out.println("****** Admin Role ******");
-//		execute(GrpcConstant.ADMIN_TOKEN);
+		System.out.println("****** Admin Role ******");
+		execute(GrpcConstant.ADMIN_TOKEN);
 
-		System.out.println("****** User Role ******");
-		execute(GrpcConstant.USER_TOKEN);
+//		System.out.println("****** User Role ******");
+//		execute(GrpcConstant.USER_TOKEN);
 
 	}
 
 	private static void execute(final String authToken) {
 
-		ManagedChannel channel = ManagedChannelBuilder.forAddress(GrpcConstant.LOCALHOST, GrpcConstant.PORT)
+		ManagedChannel channel = NettyChannelBuilder.forAddress(GrpcConstant.LOCALHOST, GrpcConstant.PORT)
 				.usePlaintext().intercept(new AuthTokenProvideInterceptor(authToken)).build();
 
 		final CalculatorServiceBlockingStub blockingStub = CalculatorServiceGrpc.newBlockingStub(channel);

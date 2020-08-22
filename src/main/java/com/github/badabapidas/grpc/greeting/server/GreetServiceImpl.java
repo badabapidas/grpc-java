@@ -1,120 +1,133 @@
 package com.github.badabapidas.grpc.greeting.server;
 
+import com.github.badabapidas.grpc.jwt.Constants;
 import com.proto.greet.*;
 import io.grpc.Context;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 
 public class GreetServiceImpl extends GreetServiceGrpc.GreetServiceImplBase {
-    @Override
-    public void greet(GreetRequest request, StreamObserver<GreetResponse> responseObserver) {
-        // extract the fields from request
-        Greeting greeting = request.getGreeting();
-        String firstName = greeting.getFirstName();
-        String lastName = greeting.getLastName();
+	@Override
+	public void greet(GreetRequest request, StreamObserver<GreetResponse> responseObserver) {
 
-        // create the response
-        String result = "Hello " + firstName + " " + lastName;
-        GreetResponse response = GreetResponse.newBuilder().setResult(result).build();
+		String clientId = Constants.CLIENT_ID_CONTEXT_KEY.get();
+		System.out.println("Processing request from " + clientId);
 
-        // send the response
-        responseObserver.onNext(response);
+		if (!clientId.startsWith("Greeting")) {
+			responseObserver.onError(new StatusRuntimeException(Status.PERMISSION_DENIED));
+		} else {
 
-        // complete the RPC call
-        responseObserver.onCompleted();
-    }
+			// extract the fields from request
+			Greeting greeting = request.getGreeting();
+			String firstName = greeting.getFirstName();
+			String lastName = greeting.getLastName();
 
-    @Override
-    public void greetManyTimes(GreetManyTimesRequest request, StreamObserver<GreetManyTimesResponse> responseObserver) {
+			// create the response
+			String result = "Hello " + firstName + " " + lastName;
+			GreetResponse response = GreetResponse.newBuilder().setResult(result).build();
 
-        try {
-            // extract the fields from request
-            Greeting greeting = request.getGreeting();
-            String firstName = greeting.getFirstName();
+			// send the response
+			responseObserver.onNext(response);
 
-            for (int i = 0; i < 10; i++) {
-                String result = "Hello " + firstName + ", Response no: " + i;
-                GreetManyTimesResponse response = GreetManyTimesResponse.newBuilder().setResult(result).build();
-                responseObserver.onNext(response);
-                Thread.sleep(1000L);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            responseObserver.onCompleted();
-        }
-    }
+			// complete the RPC call
+			responseObserver.onCompleted();
+		}
+	}
 
-    @Override
-    public StreamObserver<LongGreetRequest> longGreet(StreamObserver<LongGreetResponse> responseObserver) {
-        StreamObserver<LongGreetRequest> requestObserver = new StreamObserver<LongGreetRequest>() {
+	@Override
+	public void greetManyTimes(GreetManyTimesRequest request, StreamObserver<GreetManyTimesResponse> responseObserver) {
 
-            String result = "";
+		try {
+			// extract the fields from request
+			Greeting greeting = request.getGreeting();
+			String firstName = greeting.getFirstName();
 
-            @Override
-            public void onNext(LongGreetRequest value) {
-                // client sends a message
-                result += "Hello " + value.getGreeting().getFirstName() + "! ";
-            }
+			for (int i = 0; i < 10; i++) {
+				String result = "Hello " + firstName + ", Response no: " + i;
+				GreetManyTimesResponse response = GreetManyTimesResponse.newBuilder().setResult(result).build();
+				responseObserver.onNext(response);
+				Thread.sleep(1000L);
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			responseObserver.onCompleted();
+		}
+	}
 
-            @Override
-            public void onError(Throwable t) {
-                // client sends an error
-            }
+	@Override
+	public StreamObserver<LongGreetRequest> longGreet(StreamObserver<LongGreetResponse> responseObserver) {
+		StreamObserver<LongGreetRequest> requestObserver = new StreamObserver<LongGreetRequest>() {
 
-            @Override
-            public void onCompleted() {
-                // client is done
-                responseObserver.onNext(LongGreetResponse.newBuilder().setResult(result).build());
-                responseObserver.onCompleted();
-            }
-        };
-        return requestObserver;
-    }
+			String result = "";
 
-    @Override
-    public StreamObserver<GreetEveryoneRequest> greetEveryone(StreamObserver<GreetEveryOneResponse> responseObserver) {
-        StreamObserver<GreetEveryoneRequest> requestStreamObserver = new StreamObserver<GreetEveryoneRequest>() {
-            @Override
-            public void onNext(GreetEveryoneRequest value) {
-                String response = "Hello  " + value.getGreeting().getFirstName();
-                GreetEveryOneResponse greetEveryOneResponse = GreetEveryOneResponse.newBuilder().
-                        setResult(response)
-                        .build();
-                responseObserver.onNext(greetEveryOneResponse);
-            }
+			@Override
+			public void onNext(LongGreetRequest value) {
+				// client sends a message
+				result += "Hello " + value.getGreeting().getFirstName() + "! ";
+			}
 
-            @Override
-            public void onError(Throwable t) {
+			@Override
+			public void onError(Throwable t) {
+				// client sends an error
+			}
 
-            }
+			@Override
+			public void onCompleted() {
+				// client is done
+				responseObserver.onNext(LongGreetResponse.newBuilder().setResult(result).build());
+				responseObserver.onCompleted();
+			}
+		};
+		return requestObserver;
+	}
 
-            @Override
-            public void onCompleted() {
-                responseObserver.onCompleted();
-            }
-        };
+	@Override
+	public StreamObserver<GreetEveryoneRequest> greetEveryone(StreamObserver<GreetEveryOneResponse> responseObserver) {
+		StreamObserver<GreetEveryoneRequest> requestStreamObserver = new StreamObserver<GreetEveryoneRequest>() {
+			@Override
+			public void onNext(GreetEveryoneRequest value) {
+				String response = "Hello  " + value.getGreeting().getFirstName();
+				GreetEveryOneResponse greetEveryOneResponse = GreetEveryOneResponse.newBuilder().setResult(response)
+						.build();
+				responseObserver.onNext(greetEveryOneResponse);
+			}
 
-        return requestStreamObserver;
-    }
+			@Override
+			public void onError(Throwable t) {
 
-    @Override
-    public void greetWithDeadline(GreetWithDeadlineRequest request, StreamObserver<GreetWithDeadlineResponse> responseObserver) {
-        Context context = Context.current();
-        try {
-            for (int i = 0; i < 3; i++) {
-                System.out.println("Sleeping");
-                if (!context.isCancelled()) {
-                    Thread.sleep(100);
-                } else
-                    return;
-            }
+			}
 
-            System.out.println("send response");
-            responseObserver.onNext(GreetWithDeadlineResponse.newBuilder().setResult("Hello, " + request.getGreeting().getFirstName()).build());
-            responseObserver.onCompleted();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+			@Override
+			public void onCompleted() {
+				responseObserver.onCompleted();
+			}
+		};
 
-    }
+		return requestStreamObserver;
+	}
+
+	@Override
+	public void greetWithDeadline(GreetWithDeadlineRequest request,
+			StreamObserver<GreetWithDeadlineResponse> responseObserver) {
+		Context context = Context.current();
+		try {
+			for (int i = 0; i < 3; i++) {
+				System.out.println("Sleeping");
+				if (!context.isCancelled()) {
+					Thread.sleep(100);
+				} else
+					return;
+			}
+
+			System.out.println("send response");
+			responseObserver.onNext(GreetWithDeadlineResponse.newBuilder()
+					.setResult("Hello, " + request.getGreeting().getFirstName()).build());
+			responseObserver.onCompleted();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+	}
 }
